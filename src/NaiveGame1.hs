@@ -1,5 +1,4 @@
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module NaiveGame1 where
 
@@ -7,7 +6,6 @@ import Control.Concurrent (threadDelay)
 import Control.DeepSeq
 import Control.Monad (when)
 import qualified Data.Sequence as DS
-import GHC.Generics (Generic)
 import Linear
 import System.CPUTime (getCPUTime)
 import Text.Printf (printf)
@@ -22,9 +20,11 @@ data Block = Block { bLocation   :: !(V3 Float)
                    , bBreakable  :: !Bool
                    , bVisible    :: !Bool
                    , bType       :: !Integer }
-             deriving (Eq, Generic, Show)
+             deriving (Eq, Show)
 
-instance NFData Block
+instance NFData Block where
+  rnf (Block bl bn bd bt bb bv bty) =
+    rnf bl `seq` rnf bn `seq` rnf bd `seq` rnf bt `seq` rnf bb `seq` rnf bv `seq` rnf bty
 
 mkBlock :: V3 Float -> String -> Integer -> Integer -> Bool -> Bool -> Integer -> Block
 mkBlock loc nam dur tid brk vis typ =
@@ -42,9 +42,11 @@ data Entity = Entity { eLocation :: !(V3 Float)
                      , eName     :: !String
                      , eHealth   :: !Integer
                      , eSpeed    :: !(V3 Float) }
-              deriving (Eq, Generic, Show)
+              deriving (Eq, Show)
 
-instance NFData Entity
+instance NFData Entity where
+  rnf (Entity elo en eh es) =
+    rnf elo `seq` rnf en `seq` rnf eh `seq` rnf es
 
 mkEntity :: V3 Float -> EntityType -> Entity
 mkEntity loc typ =
@@ -83,9 +85,11 @@ numEntities = 1000
 data Chunk = Chunk { cBlocks   :: !(DS.Seq Block)
                    , cEntities :: !(DS.Seq Entity)
                    , cLocation :: !(V3 Float) }
-             deriving (Eq, Generic, Show)
+             deriving (Eq, Show)
 
-instance NFData Chunk
+instance NFData Chunk where
+  rnf (Chunk cbs ces cl) =
+    rnf cbs `seq` rnf ces `seq` rnf cl
 
 mkChunk :: V3 Float -> Chunk
 mkChunk loc =
