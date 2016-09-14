@@ -18,6 +18,7 @@ library
   exposed-modules:     NaiveGame0
                        NaiveGame1
                        NaiveGame2
+                       NaiveGame3
   build-depends:       base >= 4.7 && < 5
                      , containers >= 0.5.6 && < 0.6
                      , deepseq >= 1.4 && <= 1.5
@@ -25,6 +26,7 @@ library
                      , text >= 1.2 && <= 1.3
                      , clock >= 0.7
                      , vector >= 0.11
+                     , vector-th-unbox >= 0.2
                      , mtl >= 2.2
                      , criterion >= 1.1
   default-language:    Haskell2010
