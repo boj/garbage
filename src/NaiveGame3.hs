@@ -6,7 +6,6 @@ module NaiveGame3 (run, Block(..), Entity(..), entityName, entitySpeed, Chunk(..
 
 import Control.DeepSeq
 import Control.Exception (evaluate)
-import GHC.Generics (Generic)
 import Linear
 import qualified Data.Vector.Generic         as G
 import qualified Data.Vector.Unboxed as V
@@ -30,10 +29,11 @@ data Block = Block { bLocation   :: !(V3 Float)
                    , bBreakable  :: !Bool
                    , bVisible    :: !Bool
                    , bType       :: !Int
-                   } deriving (Eq, Generic, Show)
+                   } deriving (Eq, Show)
 
-instance NFData Block
-
+-- WHNF = NF for a strict datatype:
+instance NFData Block where rnf Block{} = ()
+           
 mkBlock :: Int -> Block
 mkBlock n = Block (V3 p p p) ("Block: " ++ show n) 100 1 True True 1
     where
@@ -43,15 +43,13 @@ data EntityType = Zombie
                 | Chicken
                 | Exploder
                 | TallCreepyThing
-                deriving (Eq, Show, Generic, Enum)
+                deriving (Eq, Show, Enum)
 
 data Entity = Entity { eLocation :: !(V3 Float)
                      , eHealth   :: !Int
                      , eType     :: !EntityType
-                     } deriving (Eq, Generic, Show)
+                     } deriving (Eq, Show)
             
-instance NFData EntityType
-instance NFData Entity
 
 derivingUnbox "Entity"
     [t| Entity -> (Float,Float,Float, Int, EntityType) |]
@@ -104,10 +102,11 @@ type BlockId = Word8
 data Chunk = Chunk { cBlocks   :: !(V.Vector BlockId)
                    , cEntities :: !(V.Vector Entity)
                    , cLocation :: !(V3 Float)
-                   } deriving (Eq, Generic, Show)
+                   } deriving (Eq, Show)
 
-instance NFData Chunk
-
+-- Don't need to force unboxed vecs:
+instance NFData Chunk where rnf Chunk{} = ()
+           
 mkChunk :: Int -> Chunk
 mkChunk p = Chunk (V.generate numBlocks fromIntegral)
                   (V.generate numEntities newEntity)
@@ -137,9 +136,13 @@ data World = World { wblocks  :: !(VB.Vector Block)
                    , wchunks  :: !(VB.Vector Chunk)
                    , wploc    :: !(V3 Float)
                    , wcounter :: !Int
-                   } deriving (Generic)
+                   }
 
-instance NFData World
+instance NFData World where
+  rnf World{..} =
+      rnf wblocks `seq`
+      rnf wchunks `seq`
+      ()
 
 loop :: World -> World
 loop (World blocks chunks oldpp counter) = World blocks chunks' playerPosition counter'
