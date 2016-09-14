@@ -95,7 +95,11 @@ numEntities = 1000
 
 numChunks :: Int
 numChunks = 100
-              
+
+-- As in the original benchmark:            
+distCap :: Float
+distCap = fromIntegral numChunks
+            
 type BlockId = Word8
 
 -- chunks hold blockids, not actual blocks
@@ -128,7 +132,7 @@ processEntities = V.map updateEntityPosition
 
 loadWorld :: World
 loadWorld = World (VB.generate 256 mkBlock)
-                  (VB.generate 100 mkChunk)
+                  (VB.generate numChunks mkChunk)
                   (V3 0 0 0)
                   numChunks
 
@@ -157,7 +161,7 @@ loop (World blocks chunks oldpp counter) = World blocks chunks' playerPosition c
             return x'
         updateChunk :: Chunk -> State Int Chunk
         updateChunk c = let !d = distance (cLocation c) playerPosition
-                        in  if d > 100
+                        in  if d > distCap
                                 then fmap mkChunk newId
                                 else return (c { cEntities = processEntities (cEntities c) })
 
