@@ -8,7 +8,7 @@ In order to reflect the spirit of the benchmark I ended up including the [DeepSe
 
 Unfortunately this ends up with about 80% of the benchmark's time spent forcibly evaluating all of the data structures. Haskell is happiest when it's being lazy, so at this point I am giving up on fighting against the language's features to make it benchmark correctly in the naive version.
 
-## NaiveGame0.hs / NaiveGame01.hs
+## NaiveGame0.hs
 
 Naive Data.List implementation.
 
