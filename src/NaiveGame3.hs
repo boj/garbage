@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell, RankNTypes, TypeFamilies, MultiParamTypeClasses, RecordWildCards #-}
 
-module NaiveGame3 (run, Block(..), Entity(..), entityName, entitySpeed, Chunk(..), World(..)) where
+module NaiveGame3 where
 
 import Control.DeepSeq
 import Control.Exception (evaluate)
@@ -114,7 +114,7 @@ instance NFData Chunk where rnf Chunk{} = ()
 mkChunk :: Int -> Chunk
 mkChunk p = Chunk (V.generate numBlocks fromIntegral)
                   (V.generate numEntities newEntity)
-                  (V3 p' p' p')
+                  (V3 p' 0 0)
   where
     p' = fromIntegral p
     newEntity n =

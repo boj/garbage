@@ -95,7 +95,7 @@ instance NFData Chunk
 mkChunk :: Int -> Chunk
 mkChunk p = Chunk (VP.generate numBlocks fromIntegral)
                   (V.generate numEntities newEntity)
-                  (V3 p' p' p')
+                  (V3 p' 0 0)
   where
     p' = fromIntegral p
     newEntity n =
