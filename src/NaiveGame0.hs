@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module NaiveGame0 where
 
@@ -7,6 +8,7 @@ import Control.Concurrent (threadDelay)
 import Control.DeepSeq
 import Control.Monad (when)
 import Data.List ((\\), foldl', mapAccumR)
+import Data.Text (Text, pack, append)
 import GHC.Generics (Generic)
 import System.CPUTime (getCPUTime)
 import Text.Printf (printf)
@@ -34,7 +36,7 @@ getDistance a b =
     (Vector sx sy sz) = a `vSub` b
 
 data Block = Block { bLocation   :: !Vector
-                   , bName       :: !String
+                   , bName       :: !Text
                    , bDurability :: !Int
                    , bTextureId  :: !Int
                    , bBreakable  :: !Bool
@@ -44,7 +46,7 @@ data Block = Block { bLocation   :: !Vector
 
 instance NFData Block
 
-mkBlock :: Vector -> String -> Int -> Int -> Bool -> Bool -> Int -> Block
+mkBlock :: Vector -> Text -> Int -> Int -> Bool -> Bool -> Int -> Block
 mkBlock loc nam dur tid brk vis typ =
   Block { bLocation   = loc
         , bName       = nam
@@ -57,7 +59,7 @@ mkBlock loc nam dur tid brk vis typ =
 data EntityType = Zombie | Chicken | Exploder | TallCreepyThing deriving (Eq)
 
 data Entity = Entity { eLocation :: !Vector
-                     , eName     :: !String
+                     , eName     :: !Text
                      , eHealth   :: !Int
                      , eSpeed    :: !Vector }
               deriving (Eq, Generic)
@@ -112,7 +114,7 @@ mkChunk loc =
         , cLocation = loc }
   where
     newBlock bs n =
-      mkBlock (Vector i i i) ("Block: " ++ show n) 100 1 True True 1 : bs
+      mkBlock (Vector i i i) ("Block: " `append` pack (show n)) 100 1 True True 1 : bs
       where
         i = fromIntegral n :: Float
     newEntity es n =
