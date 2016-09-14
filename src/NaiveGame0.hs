@@ -28,9 +28,10 @@ vSub :: Vector -> Vector -> Vector
 vSub (Vector ax ay az) (Vector bx by bz) = Vector (ax - bx) (ay - by) (az - bz)
 
 getDistance :: Vector -> Vector -> Float
-getDistance a b = do
-  let (Vector sx sy sz) = a `vSub` b
+getDistance a b =
   sqrt (sx * sx + sy * sy + sz * sz)
+  where
+    (Vector sx sy sz) = a `vSub` b
 
 data Block = Block { bLocation   :: !Vector
                    , bName       :: !String
@@ -110,15 +111,17 @@ mkChunk loc =
         , cEntities = foldl' newEntity [] [0..(numEntities `div` 4)]
         , cLocation = loc }
   where
-    newBlock bs n = do
-      let i = fromInteger n
+    newBlock bs n =
       mkBlock (Vector i i i) ("Block: " ++ show n) 100 1 True True 1 : bs
-    newEntity es n = do
-      let i = fromInteger n
+      where
+        i = fromInteger n
+    newEntity es n =
       mkEntity (Vector i i i) Chicken :
         mkEntity (Vector (i+2) i i) Zombie :
         mkEntity (Vector (i+3) i i) Exploder :
         mkEntity (Vector (i+4) i i) TallCreepyThing : es
+      where
+        i = fromInteger n
 
 processEntities :: [Entity] -> [Entity]
 processEntities = fmap updateEntityPosition
@@ -130,19 +133,20 @@ loadWorld chunkCount =
     newChunk cs n = mkChunk (Vector (fromInteger n) 0.0 0.0) : cs
 
 updateChunks :: Vector -> Integer -> [Chunk] -> ([Chunk], Integer)
-updateChunks playerLocation chunkCount chunks = do
-  let (rcs, cs) = mapAccumR runChunk [] chunks
-      rcl       = fromIntegral (length rcs)
-      ncs       = if rcl > 0
-                  then foldl' (\ncs' n -> mkChunk (Vector (fromInteger n) 0.0 0.0) : ncs') [] [0..rcl]
-                  else []
+updateChunks playerLocation chunkCount chunks =
   (ncs ++ (cs \\ rcs), chunkCount + fromIntegral rcl)
   where
-    runChunk rcs chunk = do
-      let c = chunk { cEntities = processEntities (cEntities chunk) }
+    (rcs, cs) = mapAccumR runChunk [] chunks
+    rcl       = fromIntegral (length rcs)
+    ncs       = if rcl > 0
+                then foldl' (\ncs' n -> mkChunk (Vector (fromInteger n) 0.0 0.0) : ncs') [] [0..rcl]
+                else []
+    runChunk rcs' chunk =
       if getDistance (cLocation c) playerLocation > fromInteger chunkCount
-      then (c : rcs, c)
-      else (rcs, c)
+      then (c : rcs', c)
+      else (rcs', c)
+      where
+        c = chunk { cEntities = processEntities (cEntities chunk) }
 
 run :: IO ()
 run = do

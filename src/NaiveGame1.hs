@@ -97,15 +97,17 @@ mkChunk loc =
         , cEntities = DS.fromList $ foldr newEntity [] [0..(numEntities `div` 4)]
         , cLocation = loc }
   where
-    newBlock n bs = do
-      let i = fromInteger n
+    newBlock n bs =
       mkBlock (V3 i i i) ("Block: " ++ show n) 100 1 True True 1 : bs
-    newEntity n es = do
-      let i = fromInteger n
+      where
+        i = fromInteger n
+    newEntity n es =
       mkEntity (V3 i i i) Chicken :
         mkEntity (V3 (i+2) i i) Zombie :
         mkEntity (V3 (i+3) i i) Exploder :
         mkEntity (V3 (i+4) i i) TallCreepyThing : es
+      where
+        i = fromInteger n
 
 processEntities :: DS.Seq Entity -> DS.Seq Entity
 processEntities = fmap updateEntityPosition
@@ -117,12 +119,12 @@ loadWorld chunkCount =
     newChunk n cs = mkChunk (V3 (fromInteger n) 0.0 0.0) : cs
 
 updateChunks :: V3 Float -> Integer -> DS.Seq Chunk -> (DS.Seq Chunk, Integer)
-updateChunks playerLocation chunkCount chunks = do
-  let ucs = fmap runChunk (DS.dropWhileL checkChunk chunks)
-      dif = fromIntegral (DS.length chunks - DS.length ucs)
-      ncs = foldr (\n ucs' -> ucs' DS.|> mkChunk (V3 (fromInteger n) 0.0 0.0)) ucs [chunkCount..chunkCount + dif]
+updateChunks playerLocation chunkCount chunks =
   (ncs, chunkCount + dif)
   where
+    ucs = fmap runChunk (DS.dropWhileL checkChunk chunks)
+    dif = fromIntegral (DS.length chunks - DS.length ucs)
+    ncs = foldr (\n ucs' -> ucs' DS.|> mkChunk (V3 (fromInteger n) 0.0 0.0)) ucs [chunkCount..chunkCount + dif]
     checkChunk chunk = distance (cLocation chunk) playerLocation > fromInteger chunkCount
     runChunk chunk = chunk { cEntities = processEntities (cEntities chunk) }
 
