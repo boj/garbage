@@ -169,15 +169,22 @@ nloops :: World -> Int64 -> World
 nloops !w 0 = w
 nloops !w n = nloops (loop w) (n - 1)
 
+timeitMS :: IO () -> IO String
+timeitMS act = do
+  start <- getTime MonotonicRaw
+  act
+  end <- getTime MonotonicRaw
+  return $! show (fromIntegral (toNanoSecs (diffTimeSpec end start)) / 1000.0)++" ms"
+              
 run :: IO ()
 run = do
   putStrLn "NaiveGame3: Running version 3 with unboxed Entity Vector."
   putStrLn "Loading World..."
-  start <- getTime MonotonicRaw
-  evaluate $ rnf loadWorld 
-  end <- getTime MonotonicRaw
-  putStrLn $ "FINISHED loading in "++
-             show (fromIntegral (toNanoSecs (diffTimeSpec end start)) / 1000.0)++" ms"
+  tm1 <- timeitMS $ evaluate $ rnf loadWorld 
+  putStrLn $ "Finished loading in "++tm1             
+  tm2 <- timeitMS $ evaluate $ rnf loadWorld 
+  putStrLn $ "A second RNF traversal took: "++tm2
+
   defaultMain [ bench "main loop" $ 
                      Benchmarkable (void . evaluate . nloops loadWorld) ]
 
