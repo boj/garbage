@@ -1,6 +1,6 @@
 module Main where
 
-import NaiveGame1
+import NaiveGame0
 
 main :: IO ()
 main = run

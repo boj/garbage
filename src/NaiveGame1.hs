@@ -74,10 +74,6 @@ mkEntity loc typ =
              , eHealth   = 500
              , eSpeed    = V3 1.0 1.0 1.0 }
 
-updateEntityPosition :: Entity -> Entity
-updateEntityPosition entity =
-  entity { eLocation = idVector * eSpeed entity + eLocation entity }
-
 numBlocks :: Int
 numBlocks = 65536
 
@@ -113,6 +109,9 @@ mkChunk loc =
 
 processEntities :: DS.Seq Entity -> DS.Seq Entity
 processEntities = fmap updateEntityPosition
+  where
+    updateEntityPosition e =
+      e { eLocation = idVector * eSpeed e + eLocation e }
 
 loadWorld :: Int -> DS.Seq Chunk
 loadWorld chunkCount =
