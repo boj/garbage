@@ -76,7 +76,7 @@ mkEntity loc typ =
 
 updateEntityPosition :: Entity -> Entity
 updateEntityPosition entity =
-  entity { eSpeed = idVector * eSpeed entity }
+  entity { eLocation = idVector * eSpeed entity + eLocation entity }
 
 numBlocks :: Int
 numBlocks = 65536
