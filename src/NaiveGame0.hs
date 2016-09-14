@@ -35,16 +35,16 @@ getDistance a b =
 
 data Block = Block { bLocation   :: !Vector
                    , bName       :: !String
-                   , bDurability :: !Integer
-                   , bTextureId  :: !Integer
+                   , bDurability :: !Int
+                   , bTextureId  :: !Int
                    , bBreakable  :: !Bool
                    , bVisible    :: !Bool
-                   , bType       :: !Integer }
+                   , bType       :: !Int }
              deriving (Eq, Generic)
 
 instance NFData Block
 
-mkBlock :: Vector -> String -> Integer -> Integer -> Bool -> Bool -> Integer -> Block
+mkBlock :: Vector -> String -> Int -> Int -> Bool -> Bool -> Int -> Block
 mkBlock loc nam dur tid brk vis typ =
   Block { bLocation   = loc
         , bName       = nam
@@ -58,7 +58,7 @@ data EntityType = Zombie | Chicken | Exploder | TallCreepyThing deriving (Eq)
 
 data Entity = Entity { eLocation :: !Vector
                      , eName     :: !String
-                     , eHealth   :: !Integer
+                     , eHealth   :: !Int
                      , eSpeed    :: !Vector }
               deriving (Eq, Generic)
 
@@ -92,10 +92,10 @@ updateEntityPosition :: Entity -> Entity
 updateEntityPosition entity =
   entity { eSpeed = idVector `vMul` eSpeed entity }
 
-numBlocks :: Integer
+numBlocks :: Int
 numBlocks = 65536
 
-numEntities :: Integer
+numEntities :: Int
 numEntities = 1000
 
 data Chunk = Chunk { cBlocks   :: ![Block]
@@ -114,25 +114,25 @@ mkChunk loc =
     newBlock bs n =
       mkBlock (Vector i i i) ("Block: " ++ show n) 100 1 True True 1 : bs
       where
-        i = fromInteger n
+        i = fromIntegral n :: Float
     newEntity es n =
       mkEntity (Vector i i i) Chicken :
         mkEntity (Vector (i+2) i i) Zombie :
         mkEntity (Vector (i+3) i i) Exploder :
         mkEntity (Vector (i+4) i i) TallCreepyThing : es
       where
-        i = fromInteger n
+        i = fromIntegral n :: Float
 
 processEntities :: [Entity] -> [Entity]
 processEntities = fmap updateEntityPosition
 
-loadWorld :: Integer -> [Chunk]
+loadWorld :: Int -> [Chunk]
 loadWorld chunkCount =
   foldl' newChunk [] [0..chunkCount]
   where
-    newChunk cs n = mkChunk (Vector (fromInteger n) 0.0 0.0) : cs
+    newChunk cs n = mkChunk (Vector (fromIntegral n) 0.0 0.0) : cs
 
-updateChunks :: Vector -> Integer -> [Chunk] -> ([Chunk], Integer)
+updateChunks :: Vector -> Int -> [Chunk] -> ([Chunk], Int)
 updateChunks playerLocation chunkCount chunks =
   (ncs ++ (cs \\ rcs), chunkCount + fromIntegral rcl)
   where
@@ -142,7 +142,7 @@ updateChunks playerLocation chunkCount chunks =
                 then foldl' (\ncs' n -> mkChunk (Vector (fromInteger n) 0.0 0.0) : ncs') [] [0..rcl]
                 else []
     runChunk rcs' chunk =
-      if getDistance (cLocation c) playerLocation > fromInteger chunkCount
+      if getDistance (cLocation c) playerLocation > fromIntegral chunkCount
       then (c : rcs', c)
       else (rcs', c)
       where

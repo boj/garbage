@@ -15,18 +15,18 @@ idVector = V3 1.0 1.0 1.0
 
 data Block = Block { bLocation   :: !(V3 Float)
                    , bName       :: !String
-                   , bDurability :: !Integer
-                   , bTextureId  :: !Integer
+                   , bDurability :: !Int
+                   , bTextureId  :: !Int
                    , bBreakable  :: !Bool
                    , bVisible    :: !Bool
-                   , bType       :: !Integer }
+                   , bType       :: !Int }
              deriving (Eq, Show)
 
 instance NFData Block where
   rnf (Block bl bn bd bt bb bv bty) =
     rnf bl `seq` rnf bn `seq` rnf bd `seq` rnf bt `seq` rnf bb `seq` rnf bv `seq` rnf bty
 
-mkBlock :: V3 Float -> String -> Integer -> Integer -> Bool -> Bool -> Integer -> Block
+mkBlock :: V3 Float -> String -> Int -> Int -> Bool -> Bool -> Int -> Block
 mkBlock loc nam dur tid brk vis typ =
   Block { bLocation   = loc
         , bName       = nam
@@ -40,7 +40,7 @@ data EntityType = Zombie | Chicken | Exploder | TallCreepyThing deriving (Eq)
 
 data Entity = Entity { eLocation :: !(V3 Float)
                      , eName     :: !String
-                     , eHealth   :: !Integer
+                     , eHealth   :: !Int
                      , eSpeed    :: !(V3 Float) }
               deriving (Eq, Show)
 
@@ -76,10 +76,10 @@ updateEntityPosition :: Entity -> Entity
 updateEntityPosition entity =
   entity { eSpeed = idVector * eSpeed entity }
 
-numBlocks :: Integer
+numBlocks :: Int
 numBlocks = 65536
 
-numEntities :: Integer
+numEntities :: Int
 numEntities = 1000
 
 data Chunk = Chunk { cBlocks   :: !(DS.Seq Block)
@@ -100,32 +100,32 @@ mkChunk loc =
     newBlock n bs =
       mkBlock (V3 i i i) ("Block: " ++ show n) 100 1 True True 1 : bs
       where
-        i = fromInteger n
+        i = fromIntegral n :: Float
     newEntity n es =
       mkEntity (V3 i i i) Chicken :
         mkEntity (V3 (i+2) i i) Zombie :
         mkEntity (V3 (i+3) i i) Exploder :
         mkEntity (V3 (i+4) i i) TallCreepyThing : es
       where
-        i = fromInteger n
+        i = fromIntegral n :: Float
 
 processEntities :: DS.Seq Entity -> DS.Seq Entity
 processEntities = fmap updateEntityPosition
 
-loadWorld :: Integer -> DS.Seq Chunk
+loadWorld :: Int -> DS.Seq Chunk
 loadWorld chunkCount =
   DS.fromList $ foldr newChunk [] [0..chunkCount]
   where
-    newChunk n cs = mkChunk (V3 (fromInteger n) 0.0 0.0) : cs
+    newChunk n cs = mkChunk (V3 (fromIntegral n) 0.0 0.0) : cs
 
-updateChunks :: V3 Float -> Integer -> DS.Seq Chunk -> (DS.Seq Chunk, Integer)
+updateChunks :: V3 Float -> Int -> DS.Seq Chunk -> (DS.Seq Chunk, Int)
 updateChunks playerLocation chunkCount chunks =
   (ncs, chunkCount + dif)
   where
     ucs = fmap runChunk (DS.dropWhileL checkChunk chunks)
     dif = fromIntegral (DS.length chunks - DS.length ucs)
-    ncs = foldr (\n ucs' -> ucs' DS.|> mkChunk (V3 (fromInteger n) 0.0 0.0)) ucs [chunkCount..chunkCount + dif]
-    checkChunk chunk = distance (cLocation chunk) playerLocation > fromInteger chunkCount
+    ncs = foldr (\n ucs' -> ucs' DS.|> mkChunk (V3 (fromIntegral n) 0.0 0.0)) ucs [chunkCount..chunkCount + dif]
+    checkChunk chunk = distance (cLocation chunk) playerLocation > fromIntegral chunkCount
     runChunk chunk = chunk { cEntities = processEntities (cEntities chunk) }
 
 run :: IO ()
